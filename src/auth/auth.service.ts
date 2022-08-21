@@ -8,10 +8,6 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 export class AuthService {
   constructor(private prisma: PrismaService) {}
 
-  getUsers() {
-    return this.prisma.user.findMany();
-  }
-
   async signup(dto: AuthDto) {
     try {
       const hash = await argon.hash(dto.password);
@@ -55,6 +51,32 @@ export class AuthService {
 
       return user;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async getUsers() {
+    const users = await this.prisma.user.findMany();
+    return users;
+  }
+
+  async deleteUser(email: string) {
+    try {
+      const deletedUser = await this.prisma.user.delete({
+        where: {
+          email,
+        },
+      });
+
+      return { email: deletedUser.email, message: 'User deleted successfully' };
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new ForbiddenException('The user is not exists');
+      }
+
       throw error;
     }
   }

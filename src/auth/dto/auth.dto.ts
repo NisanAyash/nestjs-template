@@ -13,3 +13,9 @@ export class AuthDto {
   last_name?: string;
   updated_at?: Date;
 }
+
+export class EmailDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}
